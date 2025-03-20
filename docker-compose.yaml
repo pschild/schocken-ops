@@ -1,0 +1,72 @@
+name: schocken
+
+networks:
+  schocken:
+    name: schocken
+    external: true  # important for Cloudflare to access services via tunnel
+
+volumes:
+  schocken-pgdata:
+    name: schocken-pgdata
+
+services:
+  postgres:
+    image: postgres:15.7
+    container_name: schocken-postgres
+    restart: unless-stopped
+    networks:
+      - schocken
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      HOPTIMISTEN_DATABASE_NAME: ${DATABASE_DB}
+    ports:
+      - "5439:5432"
+    volumes:
+      - ./db/init.sh:/docker-entrypoint-initdb.d/init.sh
+      - schocken-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  schocken-backend:
+    image: philippeschild/hoptimisten-backend:latest
+    restart: unless-stopped
+    container_name: schocken-backend
+    networks:
+      - schocken
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/logs/
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  schocken-frontend:
+    image: philippeschild/hoptimisten-frontend:latest
+    restart: unless-stopped
+    container_name: schocken-frontend
+    networks:
+      - schocken
+
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - schocken
+
+  proxy:
+    image: nginx:latest
+    container_name: schocken-proxy
+    restart: unless-stopped
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+    networks:
+      - schocken
