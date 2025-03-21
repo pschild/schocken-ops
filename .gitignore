@@ -37,3 +37,6 @@ pids
 *.pid
 *.seed
 *.pid.lock
+
+# log files
+/logs
