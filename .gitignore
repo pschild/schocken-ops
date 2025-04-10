@@ -40,3 +40,6 @@ pids
 
 # log files
 /logs
+
+# backup folder
+/db/backups
