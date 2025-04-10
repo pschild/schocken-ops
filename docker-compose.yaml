@@ -33,9 +33,7 @@ services:
 
   db-restore-dump:
     image: postgres:15.7
-#    command: pg_restore -h postgres -p 5432 -U eforms_editor_db_user -d eformseditor eformseditor.tar
-#    command: pg_restore -h schocken-postgres -p 5432 -d hoptimisten ./db/dumps/hoptimisten.tar
-    command: pg_restore --clean -h schocken-postgres -p 5432 -d hoptimisten ./hoptimisten.tar
+    command: pg_restore -h schocken-postgres -p 5432 -d hoptimisten ./hoptimisten.tar
     volumes:
       - ./db/dumps/hoptimisten.tar:/hoptimisten.tar
     networks:
@@ -45,6 +43,25 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  # see https://hub.docker.com/r/prodrigestivill/postgres-backup-local
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local:15
+    restart: always
+    volumes:
+      - ./db/backups:/backups
+    depends_on:
+      - postgres
+    networks:
+      - schocken
+    environment:
+      POSTGRES_HOST: schocken-postgres
+      POSTGRES_DB: ${DATABASE_DB}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      SCHEDULE: "0 4 * * SAT" # At 04:00 on Saturday
+#      SCHEDULE: "* * * * *" # At every minute (for testing)
+      BACKUP_ON_START: TRUE
 
   schocken-backend:
     image: philippeschild/hoptimisten-backend:latest
