@@ -31,6 +31,21 @@ services:
       timeout: 5s
       retries: 5
 
+  db-restore-dump:
+    image: postgres:15.7
+#    command: pg_restore -h postgres -p 5432 -U eforms_editor_db_user -d eformseditor eformseditor.tar
+#    command: pg_restore -h schocken-postgres -p 5432 -d hoptimisten ./db/dumps/hoptimisten.tar
+    command: pg_restore --clean -h schocken-postgres -p 5432 -d hoptimisten ./hoptimisten.tar
+    volumes:
+      - ./db/dumps/hoptimisten.tar:/hoptimisten.tar
+    networks:
+      - schocken
+    environment:
+      PGPASSWORD: ${DATABASE_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   schocken-backend:
     image: philippeschild/hoptimisten-backend:latest
     restart: unless-stopped
