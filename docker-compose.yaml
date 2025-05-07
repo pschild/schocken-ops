@@ -3,7 +3,6 @@ name: schocken
 networks:
   schocken:
     name: schocken
-    external: true  # important for Cloudflare to access services via tunnel
 
 volumes:
   schocken-pgdata:
