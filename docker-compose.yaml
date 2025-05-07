@@ -59,9 +59,11 @@ services:
       POSTGRES_DB: ${DATABASE_DB}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      BACKUP_SUFFIX: .tar
+      POSTGRES_EXTRA_OPTS: -F t -a
       SCHEDULE: "0 4 * * SAT" # At 04:00 on Saturday
 #      SCHEDULE: "* * * * *" # At every minute (for testing)
-      BACKUP_ON_START: TRUE
+      BACKUP_ON_START: "TRUE"
 
   schocken-backend:
     image: philippeschild/hoptimisten-backend:latest
@@ -102,3 +104,17 @@ services:
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
     networks:
       - schocken
+
+  ftp-server:
+    environment:
+      - PUBLIC_IP=192.168.178.48
+      - FTP_PASS=123
+      - FTP_USER=user
+    image: garethflowers/ftp-server
+    ports:
+      - "20-21:20-21/tcp"
+      - "40000-40009:40000-40009/tcp" # For passive mode
+    volumes:
+      - "~/schocken-ops:/home/user"
+    profiles:
+      - donotstart # service is disabled by default
