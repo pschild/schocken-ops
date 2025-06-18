@@ -1,3 +1,7 @@
+## Architecture
+
+![Network](./img/network.png "Network")
+
 ## Commands
 
 ### Export dump

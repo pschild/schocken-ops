@@ -65,7 +65,7 @@ services:
       BACKUP_ON_START: "TRUE"
 
   schocken-backend:
-    image: philippeschild/hoptimisten-backend:latest
+    image: philippeschild/hoptimisten-backend:${BACKEND_VERSION}
     restart: unless-stopped
     container_name: schocken-backend
     networks:
@@ -79,7 +79,7 @@ services:
         condition: service_healthy
 
   schocken-frontend:
-    image: philippeschild/hoptimisten-frontend:latest
+    image: philippeschild/hoptimisten-frontend:${FRONTEND_VERSION}
     restart: unless-stopped
     container_name: schocken-frontend
     networks:
@@ -106,7 +106,7 @@ services:
 
   ftp-server:
     environment:
-      - PUBLIC_IP=192.168.178.48
+      - PUBLIC_IP=${HOST_IP}
       - FTP_PASS=123
       - FTP_USER=user
     image: garethflowers/ftp-server
