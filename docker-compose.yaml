@@ -30,19 +30,6 @@ services:
       timeout: 5s
       retries: 5
 
-  db-restore-dump:
-    image: postgres:15.7
-    command: pg_restore -h schocken-postgres -p 5432 -d hoptimisten ./hoptimisten.tar
-    volumes:
-      - ./db/dumps/hoptimisten.tar:/hoptimisten.tar
-    networks:
-      - schocken
-    environment:
-      PGPASSWORD: ${DATABASE_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   # see https://hub.docker.com/r/prodrigestivill/postgres-backup-local
   pgbackups:
     image: prodrigestivill/postgres-backup-local:15
@@ -115,5 +102,20 @@ services:
       - "40000-40009:40000-40009/tcp" # For passive mode
     volumes:
       - "~/schocken-ops:/home/user"
+    profiles:
+      - donotstart # service is disabled by default
+
+  db-restore-dump:
+    image: postgres:15.7
+    command: pg_restore -h schocken-postgres -p 5432 -d hoptimisten ./hoptimisten.tar
+    volumes:
+      - ./db/dumps/hoptimisten-20250621.tar:/hoptimisten.tar
+    networks:
+      - schocken
+    environment:
+      PGPASSWORD: ${DATABASE_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
     profiles:
       - donotstart # service is disabled by default
