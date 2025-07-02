@@ -7,6 +7,8 @@ networks:
 volumes:
   schocken-pgdata:
     name: schocken-pgdata
+  schocken-mongodata:
+    name: schocken-mongodata
 
 services:
   postgres:
@@ -29,6 +31,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: unless-stopped
+    networks:
+      - schocken
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "27018:27017"
+    volumes:
+      - schocken-mongodata:/data/db
 
   # see https://hub.docker.com/r/prodrigestivill/postgres-backup-local
   pgbackups:
@@ -64,6 +80,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mongodb:
+        condition: service_started
 
   schocken-frontend:
     image: philippeschild/hoptimisten-frontend:${FRONTEND_VERSION}
