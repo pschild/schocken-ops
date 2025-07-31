@@ -11,6 +11,7 @@ volumes:
 #    name: schocken-mongodata
   whatsapp-auth-data:
     name: whatsapp-auth-data
+  portainer-data:
 
 services:
   postgres:
@@ -130,7 +131,7 @@ services:
     image: postgres:15.7
     command: pg_restore -h schocken-postgres -p 5432 -d hoptimisten ./hoptimisten.tar
     volumes:
-      - ./db/dumps/hoptimisten-20250621.tar:/hoptimisten.tar
+      - ./db/dumps/hoptimisten-20250705.tar:/hoptimisten.tar
     networks:
       - schocken
     environment:
@@ -140,3 +141,12 @@ services:
         condition: service_healthy
     profiles:
       - donotstart # service is disabled by default
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    ports:
+      - "9443:9443"
+    volumes:
+      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
